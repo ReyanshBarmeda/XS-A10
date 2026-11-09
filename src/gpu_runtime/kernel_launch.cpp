@@ -25,19 +25,19 @@
 // #include "cocl/DebugDumper.h"
 
 using namespace std;
-using namespace VeriGPU;
+using namespace XS-A10;
 
-#ifdef VERIGPU_PRINT
-#undef VERIGPU_PRINT
+#ifdef XS-A10_PRINT
+#undef XS-A10_PRINT
 #endif
 
-#define VERIGPU_SPAM_KERNELLAUNCH
+#define XS-A10_SPAM_KERNELLAUNCH
 
-#ifdef VERIGPU_SPAM_KERNELLAUNCH
-#define VERIGPU_PRINT(x) std::cout << "[LAUNCH] " << x << std::endl;
+#ifdef XS-A10_SPAM_KERNELLAUNCH
+#define XS-A10_PRINT(x) std::cout << "[LAUNCH] " << x << std::endl;
 #define WHEN_SPAMMING(x) x
 #else
-#define VERIGPU_PRINT(x)
+#define XS-A10_PRINT(x)
 #define WHEN_SPAMMING(x)
 #endif
 
@@ -62,7 +62,7 @@ static std::string makePreferred(std::string path) {
     return path;
 }
 
-namespace VeriGPU
+namespace XS-A10
 {
     // this lock works as follows:
     // - configureKernel takes out a lock, and does not release it. This first level of locking will remain locked, until
@@ -77,7 +77,7 @@ namespace VeriGPU
     // std::recursive_mutex launchMutex;
 }
 
-using namespace VeriGPU;
+using namespace XS-A10;
 
 static LaunchConfiguration launchConfiguration;
 // static DebugDumper debugDumper(&launchConfiguration);
@@ -109,7 +109,7 @@ int cudaConfigureCall(
     // CLQueue *clqueue = coclStream->clqueue;
     if (sharedMem != 0)
     {
-        VERIGPU_PRINT("cudaConfigureCall: Not implemented: non-zero shared memory");
+        XS-A10_PRINT("cudaConfigureCall: Not implemented: non-zero shared memory");
         throw runtime_error("cudaConfigureCall: Not implemented: non-zero shared memory");
     }
     int grid_x = grid.x;
@@ -119,7 +119,7 @@ int cudaConfigureCall(
     int block_y = block.y;
     int block_z = block.z;
 
-    // VERIGPU_PRINT("cudaConfigureCall(grid=" << grid << ",block=" << block << ",sharedMem=" << sharedMem << ",queue=" << (uint64_t)queue_as_voidstar << ")")
+    // XS-A10_PRINT("cudaConfigureCall(grid=" << grid << ",block=" << block << ",sharedMem=" << sharedMem << ",queue=" << (uint64_t)queue_as_voidstar << ")")
 
     launchConfiguration.grid[0] = grid_x;
     launchConfiguration.grid[1] = grid_y;
@@ -130,24 +130,24 @@ int cudaConfigureCall(
     return 0;
 }
 
-namespace VeriGPU
+namespace XS-A10
 {
     size_t assemble(uint32_t offset, std::string assembly, vector<unsigned int> &codeWords, bool quiet) {
         // now we have to assemble it...
         // perhaps we can just use clang to assemble it???
         // anyway for now, first try using assembler.py
         // first we should write the assembler somewhere
-        char *pString = std::getenv("VERIGPUDIR");
+        char *pString = std::getenv("XS-A10DIR");
         if (pString == 0)
         {
-            std::cout << "ERROR: You need to define VERIGPUDIR" << std::endl;
-            throw std::runtime_error("ERROR: You need to define VERIGPUDIR");
+            std::cout << "ERROR: You need to define XS-A10DIR" << std::endl;
+            throw std::runtime_error("ERROR: You need to define XS-A10DIR");
         }
-        std::string verigpuDir = pString;
-        // std::cout << "VERIGPUDIR=" << verigpuDir << std::endl;
+        std::string XS-A10Dir = pString;
+        // std::cout << "XS-A10DIR=" << XS-A10Dir << std::endl;
 
         std::ofstream of;
-        std::string asmPath = makePreferred(verigpuDir + "/build/prog.asm");
+        std::string asmPath = makePreferred(XS-A10Dir + "/build/prog.asm");
         // std::cout << "asmPath " << asmPath << std::endl;
         of.open(asmPath);
         if(!of) {
@@ -156,9 +156,9 @@ namespace VeriGPU
         }
         of << assembly << std::endl;
         of.close();
-        std::string cmd_line = ("python3 " + makePreferred(verigpuDir + "/verigpu/assembler.py") +
-                                " --in-asm " + makePreferred(verigpuDir + "/build/prog.asm") +
-                                " --out-hex " + makePreferred(verigpuDir + "/build/prog.hex") +
+        std::string cmd_line = ("python3 " + makePreferred(XS-A10Dir + "/XS-A10/assembler.py") +
+                                " --in-asm " + makePreferred(XS-A10Dir + "/build/prog.asm") +
+                                " --out-hex " + makePreferred(XS-A10Dir + "/build/prog.hex") +
                                 " --offset " + std::to_string(offset));
         if (quiet) {
             cmd_line += " --quiet";
@@ -168,7 +168,7 @@ namespace VeriGPU
 
         // now get size of file
         std::ifstream fin;
-        fin.open(makePreferred(verigpuDir + "/build/prog.hex"));
+        fin.open(makePreferred(XS-A10Dir + "/build/prog.hex"));
         int numLines = 0;
         // std::string _;
         unsigned int codeWord;
@@ -242,14 +242,14 @@ namespace VeriGPU
     // {
     //     return getThreadVars()->getContext()->numKernelCalls;
     // }
-} // namespace VeriGPU
+} // namespace XS-A10
 
 void configureKernel(const char *kernelName, const char *deviceriscvsourcecode)
 {
     // pthread_mutex_lock(&launchMutex);
     // launchMutex.lock();
     // std::lock_guard<std::recursive_mutex> guard(launchMutex);
-    // VERIGPU_PRINT("=========================================");
+    // XS-A10_PRINT("=========================================");
     launchConfiguration.kernelName = kernelName;
     launchConfiguration.deviceriscvsourcecode = deviceriscvsourcecode;
 
@@ -319,7 +319,7 @@ void setKernelArgPointerVoid(void *ptrVoid)
 //     // std::lock_guard<std::recursive_mutex> guard(launchMutex);
 //     // pthread_mutex_lock(&launchMutex);
 //     launchConfiguration.args.push_back(std::unique_ptr<Arg>(new Int64Arg(value)));
-//     VERIGPU_PRINT("setKernelArgInt64 " << value);
+//     XS-A10_PRINT("setKernelArgInt64 " << value);
 //     // pthread_mutex_unlock(&launchMutex);
 // }
 
@@ -328,7 +328,7 @@ void setKernelArgInt32(int value)
     // std::lock_guard<std::recursive_mutex> guard(launchMutex);
     // pthread_mutex_lock(&launchMutex);
     launchConfiguration.args.push_back(std::unique_ptr<Arg>(new Int32Arg(value)));
-    // VERIGPU_PRINT("setKernelArgInt32 " << value);
+    // XS-A10_PRINT("setKernelArgInt32 " << value);
     // pthread_mutex_unlock(&launchMutex);
 }
 
@@ -337,7 +337,7 @@ void setKernelArgInt32(int value)
 //     // std::lock_guard<std::recursive_mutex> guard(launchMutex);
 //     // pthread_mutex_lock(&launchMutex);
 //     launchConfiguration.args.push_back(std::unique_ptr<Arg>(new Int8Arg(value)));
-//     VERIGPU_PRINT("setKernelArgInt8 " << value);
+//     XS-A10_PRINT("setKernelArgInt8 " << value);
 //     // pthread_mutex_unlock(&launchMutex);
 // }
 
@@ -346,7 +346,7 @@ void setKernelArgFloat(float value)
     // std::lock_guard<std::recursive_mutex> guard(launchMutex);
     // pthread_mutex_lock(&launchMutex);
     launchConfiguration.args.push_back(std::unique_ptr<Arg>(new FloatArg(value)));
-    // VERIGPU_PRINT("setKernelArgFloat " << value);
+    // XS-A10_PRINT("setKernelArgFloat " << value);
     // pthread_mutex_unlock(&launchMutex);
 }
 
@@ -356,7 +356,7 @@ void kernelGo()
     {
         // launchMutex.lock();
         // pthread_mutex_lock(&launchMutex);
-        // VERIGPU_PRINT("kernelGo() kernel: " << launchConfiguration.kernelName);
+        // XS-A10_PRINT("kernelGo() kernel: " << launchConfiguration.kernelName);
         // std::cout << "kernel source code " << launchConfiguration.deviceriscvsourcecode << std::endl;
 
         // things we have to do:
@@ -427,7 +427,7 @@ halt
         vector<uint32_t> paramsCode;  // hold LI code for parameters
         for (int i = 0; i < launchConfiguration.args.size(); i++)
         {
-            // VERIGPU_PRINT("arg i=" << i << " " << launchConfiguration.args[i]->str());
+            // XS-A10_PRINT("arg i=" << i << " " << launchConfiguration.args[i]->str());
             uint32_t arg_as_int = launchConfiguration.args[i]->asUInt32();
             uint32_to_li(i, arg_as_int, paramsCode);
         }
@@ -476,10 +476,10 @@ halt
         {
             global[i] = launchConfiguration.grid[i] * launchConfiguration.block[i];
         }
-        // VERIGPU_PRINT("grid: " << launchConfiguration.grid << " block: " << launchConfiguration.block
+        // XS-A10_PRINT("grid: " << launchConfiguration.grid << " block: " << launchConfiguration.block
         //                     << " global: " << global);
         int workgroupSize = launchConfiguration.block[0] * launchConfiguration.block[1] * launchConfiguration.block[2];
-        // VERIGPU_PRINT("workgroupSize=" << workgroupSize);
+        // XS-A10_PRINT("workgroupSize=" << workgroupSize);
 
         vector<uint32_t> args_as_ints;
         for (int i = 0; i < launchConfiguration.args.size(); i++)
