@@ -2,7 +2,7 @@
 This needs to take the -hostraw.ll file, and patch the calls to the kernel to instead
 make calls to our gpu api
 
-This is based on patch_hostside.cpp from https://github.com/hughperkins/coriander(this is source code for test and run XS A10)
+This is based on patch_hostside.cpp from https://github.com/hughperkins/coriander(i use this source code for using in my project and respectfuly mentioned it)
 
 We're going to comment out anything to do with structs for now, keep things simple
 */
