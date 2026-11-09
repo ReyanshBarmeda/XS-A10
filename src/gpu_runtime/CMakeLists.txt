@@ -11,7 +11,7 @@ endif()
 
 set(CMAKE_CXX_STANDARD 14)
 
-project(verigpu_runtime)
+project(XS-A10_runtime)
 
 find_package(LLVM REQUIRED CONFIG PATHS "${CLANG_HOME}/lib/cmake/llvm")
 find_package(ZLIB REQUIRED)
@@ -25,13 +25,13 @@ message(STATUS "llvm_libs ${llvm_libs}")
 
 find_package(verilator REQUIRED HINTS $ENV{VERILATOR_ROOT})
 
-# set(BASE CACHE STRING "root of verigpu repo" "${CMAKE_SOURCE_DIR}/../../..")
+# set(BASE CACHE STRING "root of XS-A10 repo" "${CMAKE_SOURCE_DIR}/../../..")
 set(BASE "${CMAKE_SOURCE_DIR}/../..")
 set(SRC "${BASE}/src")
 message(STATUS "BASE ${BASE}")
 
-# add_library(verigpu_runtime SHARED
-add_library(verigpu_runtime SHARED
+# add_library(XS-A10_runtime SHARED
+add_library(XS-A10_runtime SHARED
     ${VERILATOR_ROOT}/include/verilated.cpp
     ${CMAKE_SOURCE_DIR}/gpu_runtime.cpp
     ${CMAKE_SOURCE_DIR}/kernel_launch.cpp
@@ -41,8 +41,8 @@ add_library(verigpu_runtime SHARED
     # ${BASE}/build/hip_api.cpp
 )
 message(STATUS "LLVM_INCLUDE_DIRS ${LLVM_INCLUDE_DIRS}")
-target_include_directories(verigpu_runtime PRIVATE ${CMAKE_SOURCE_DIR} ${CLANG_HOME}/include ${LLVM_INCLUDE_DIRS})
-verilate(verigpu_runtime
+target_include_directories(XS-A10_runtime PRIVATE ${CMAKE_SOURCE_DIR} ${CLANG_HOME}/include ${LLVM_INCLUDE_DIRS})
+verilate(XS-A10_runtime
     SOURCES
         ${SRC}/const.sv
         ${SRC}/op_const.sv
@@ -66,9 +66,9 @@ verilate(verigpu_runtime
     PREFIX gpu_card
 )
 if(LINUX)
-    target_link_libraries(verigpu_runtime PRIVATE)
+    target_link_libraries(XS-A10_runtime PRIVATE)
 endif()
-target_compile_options(verigpu_runtime PRIVATE "-fPIE;-fPIC")
+target_compile_options(XS-A10_runtime PRIVATE "-fPIE;-fPIC")
 
 # some of this stuff is copied from Coriander, apr 6 2022
 
